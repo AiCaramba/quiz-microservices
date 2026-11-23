@@ -1,10 +1,16 @@
 package com.quiz.collectionservice.model;
 
-import java.util.Dictionary;
-import java.util.List;
+import jakarta.persistence.*;
 
+
+@Entity
+@Table(name = "collections")
 public class CollectionModel {
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     public String id;
-    public List<Dictionary<String, String>> words;
+    @Column(nullable = false)
+    public String words;
+    @Column(nullable = false)
     public Boolean isShared;
 }
