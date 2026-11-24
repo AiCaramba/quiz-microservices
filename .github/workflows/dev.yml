@@ -43,15 +43,6 @@ jobs:
           docker build -t "$IMAGE_URI" .
           docker push "$IMAGE_URI"
           echo "image=$IMAGE_URI" >> $GITHUB_OUTPUT
-
-      - name: Ensure target directory exists on EC2
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            sudo mkdir -p "/home/${{ secrets.EC2_USER }}/"
       
       - name: Copy docker-compose.yaml to EC2
         uses: appleboy/scp-action@v0.1.7
