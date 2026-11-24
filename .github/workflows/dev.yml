@@ -8,7 +8,7 @@ env:
   AWS_REGION: eu-north-1
   AWS_REPOSITORY: development
   CONTAINER_NAME: collections-service
-  APP_DIR: /opt/collections-service
+  APP_DIR: /collections-service
 
 permissions:
   contents: read
@@ -44,6 +44,16 @@ jobs:
           docker build -t "$IMAGE_URI" .
           docker push "$IMAGE_URI"
           echo "image=$IMAGE_URI" >> $GITHUB_OUTPUT
+
+      - name: Copy docker-compose.yml to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          rm: false
+          target: ${{ env.APP_DIR }}
+          source: "docker-compose.yml"
 
       - name: Deploy with Docker Compose on EC2
         uses: appleboy/ssh-action@v1.2.0
