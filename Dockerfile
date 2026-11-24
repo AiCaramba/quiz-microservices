@@ -1,3 +1,8 @@
+FROM eclipse-temurin:21-jdk-alpine AS builder
+WORKDIR workspace
+COPY . .
+RUN ./gradlew bootJar
+
 FROM eclipse-temurin:21-jre-alpine
 RUN apk add --no-cache curl ca-certificates openssl \
     && mkdir -p /app/certs /tmp/rds-certs \
@@ -12,6 +17,5 @@ RUN apk add --no-cache curl ca-certificates openssl \
        done \
     && rm -rf /tmp/rds-certs /app/certs/global-bundle.pem
 RUN keytool -list -keystore /app/certs/rds-truststore.jks -storepass changeit | head -n 15
-LABEL authors="zinnurrafikov"
-COPY build/libs/*.jar app.jar
+COPY --from=builder /workspace/build/libs/*.jar app.jar
 ENTRYPOINT ["java","-jar","/app.jar"]
