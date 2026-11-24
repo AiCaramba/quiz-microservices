@@ -45,7 +45,7 @@ jobs:
           docker push "$IMAGE_URI"
           echo "image=$IMAGE_URI" >> $GITHUB_OUTPUT
 
-      - name: Copy docker-compose.yml to EC2
+      - name: Copy docker-compose.yaml to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -53,7 +53,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           rm: false
           target: ${{ env.APP_DIR }}
-          source: "docker-compose.yml"
+          source: "docker-compose.yaml"
 
       - name: Deploy with Docker Compose on EC2
         uses: appleboy/ssh-action@v1.2.0
