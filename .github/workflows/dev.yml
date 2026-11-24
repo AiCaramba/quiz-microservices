@@ -8,7 +8,7 @@ env:
   AWS_REGION: eu-north-1
   AWS_REPOSITORY: development
   CONTAINER_NAME: collections-service
-  APP_DIR: /collections-service
+  APP_DIR: /opt/collections-service
 
 permissions:
   contents: read
