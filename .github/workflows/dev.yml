@@ -8,7 +8,6 @@ env:
   AWS_REGION: eu-north-1
   AWS_REPOSITORY: development
   CONTAINER_NAME: collections-service
-  APP_DIR: /home/collections-service
 
 permissions:
   contents: read
@@ -52,7 +51,7 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            sudo mkdir -p "${{ env.APP_DIR }}"
+            sudo mkdir -p "/home/${{ secrets.EC2_USER }}/"
       
       - name: Copy docker-compose.yaml to EC2
         uses: appleboy/scp-action@v0.1.7
@@ -61,7 +60,7 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "docker-compose.yaml"
-          target: ${{ env.APP_DIR }}
+          target: "/home/${{ secrets.EC2_USER }}/"
           strip_components: 0
 
       - name: Deploy with Docker Compose on EC2
@@ -72,7 +71,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             set -e
-            cd "${{ env.APP_DIR }}"
+            cd "/home/${{ secrets.EC2_USER }}/"
             aws ecr get-login-password --region "${{ env.AWS_REGION }}" | docker login --username AWS --password-stdin "${{ steps.login-ecr.outputs.registry }}"
             export IMAGE_TAG="${{ github.sha }}"
             docker compose pull
