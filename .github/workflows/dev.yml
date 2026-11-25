@@ -43,6 +43,38 @@ jobs:
           docker build -t "$IMAGE_URI" .
           docker push "$IMAGE_URI"
           echo "image=$IMAGE_URI" >> $GITHUB_OUTPUT
+
+      - name: Fetch Parameters from AWS SSM
+        id: ssm
+        run: |
+          URL=$(aws ssm get-parameter \
+            --region "$AWS_REGION" \
+            --name "$PARAMS_PREFIX/COLLECTIONS_DATASOURCE_URL" \
+            --with-decryption \
+            --query "Parameter.Value" \
+            --output text)
+
+          USER=$(aws ssm get-parameter \
+            --region "$AWS_REGION" \
+            --name "$PARAMS_PREFIX/COLLECTIONS_DATASOURCE_USERNAME" \
+            --with-decryption \
+            --query "Parameter.Value" \
+            --output text)
+
+          PASS=$(aws ssm get-parameter \
+            --region "$AWS_REGION" \
+            --name "$PARAMS_PREFIX/COLLECTIONS_DATASOURCE_PASSWORD" \
+            --with-decryption \
+            --query "Parameter.Value" \
+            --output text)
+
+          echo "::add-mask::$URL"
+          echo "::add-mask::$USER"
+          echo "::add-mask::$PASS"
+
+          echo "url=$URL" >> $GITHUB_OUTPUT
+          echo "username=$USER" >> $GITHUB_OUTPUT
+          echo "password=$PASS" >> $GITHUB_OUTPUT
       
       - name: Copy docker-compose.yaml to EC2
         uses: appleboy/scp-action@v0.1.7
@@ -58,8 +90,11 @@ jobs:
         uses: appleboy/ssh-action@v1.2.0
         env:
             IMAGE_URI: ${{ steps.build-image.outputs.image }}
+            COLLECTIONS_DATASOURCE_URL: ${{ steps.ssm.outputs.url }}
+            COLLECTIONS_DATASOURCE_USERNAME: ${{ steps.ssm.outputs.username }}
+            COLLECTIONS_DATASOURCE_PASSWORD: ${{ steps.ssm.outputs.password }}
         with:
-          envs: IMAGE_URI
+          envs: IMAGE_URI,COLLECTIONS_DATASOURCE_URL,COLLECTIONS_DATASOURCE_USERNAME,COLLECTIONS_DATASOURCE_PASSWORD
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
