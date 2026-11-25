@@ -1,11 +1,10 @@
 services:
   collections-service:
     image: ${IMAGE_URI}
-    container_name:  collections-service
+    container_name: collections-service
     ports:
       - "80:8080"
     environment:
       COLLECTIONS_DATASOURCE_URL: ${COLLECTIONS_DATASOURCE_URL}
       COLLECTIONS_DATASOURCE_USERNAME: ${COLLECTIONS_DATASOURCE_USERNAME}
       COLLECTIONS_DATASOURCE_PASSWORD: ${COLLECTIONS_DATASOURCE_PASSWORD}
-      PARAMS_PREFIX: "/collections-service/dev"
