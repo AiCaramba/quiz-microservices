@@ -8,6 +8,7 @@ env:
   AWS_REGION: eu-north-1
   AWS_REPOSITORY: development
   CONTAINER_NAME: collections-service
+  PARAMS_PREFIX: "/collections-service/dev"
 
 permissions:
   contents: read
@@ -47,6 +48,10 @@ jobs:
       - name: Fetch Parameters from AWS SSM
         id: ssm
         run: |
+          aws sts get-caller-identity
+          echo "Region: $AWS_REGION | Prefix: $PARAMS_PREFIX"
+          echo "Looking for: $PARAMS_PREFIX/COLLECTIONS_DATASOURCE_PASSWORD"
+          
           URL=$(aws ssm get-parameter \
             --region "$AWS_REGION" \
             --name "$PARAMS_PREFIX/COLLECTIONS_DATASOURCE_URL" \
@@ -67,6 +72,9 @@ jobs:
             --with-decryption \
             --query "Parameter.Value" \
             --output text)
+
+          echo "DEBUG URL: $URL"
+          echo "DEBUG USER: $USER"
 
           echo "::add-mask::$URL"
           echo "::add-mask::$USER"
@@ -102,6 +110,7 @@ jobs:
             set -e
             cd "/home/${{ secrets.EC2_USER }}/"
             aws ecr get-login-password --region "${{ env.AWS_REGION }}" | docker login --username AWS --password-stdin "${{ steps.login-ecr.outputs.registry }}"
+            docker compose config
             docker compose pull
             docker compose up -d --remove-orphans
             docker image prune -f
