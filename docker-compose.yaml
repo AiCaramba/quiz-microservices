@@ -4,7 +4,16 @@ services:
     container_name: collections-service
     ports:
       - "80:8080"
-    command: ["-p", "/collections-service/dev", "--aws-region", "eu-north-1", "sh", "-c", "exec java -jar /app.jar"]
+    entrypoint: [ "env-aws-params" ]
+    command:
+      - "-p"
+      - "/collections-service/prod"
+      - "--aws-region"
+      - "eu-north-1"
+      - "--"
+      - "java"
+      - "-jar"
+      - "/app.jar"
     environment:
       COLLECTIONS_DATASOURCE_URL: ${COLLECTIONS_DATASOURCE_URL}
       COLLECTIONS_DATASOURCE_USERNAME: ${COLLECTIONS_DATASOURCE_USERNAME}

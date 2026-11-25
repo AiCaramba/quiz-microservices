@@ -21,4 +21,4 @@ RUN keytool -list -keystore /app/certs/rds-truststore.jks -storepass changeit | 
 COPY --from=ghcr.io/gmr/env-aws-params:latest /usr/local/bin/env-aws-params /usr/local/bin/env-aws-params
 COPY --from=builder /workspace/build/libs/*.jar app.jar
 
-ENTRYPOINT ["env-aws-params"]
+ENTRYPOINT ["java","-jar","/app.jar"]

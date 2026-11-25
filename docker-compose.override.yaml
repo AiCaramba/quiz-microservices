@@ -1,7 +1,5 @@
 services:
   collections-service:
     build: .
-    entrypoint: [ "java" ]
-    command: [ "-jar", "/app.jar" ]
     ports:
       - "8080:8080"
