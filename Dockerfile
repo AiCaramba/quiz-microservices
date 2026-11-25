@@ -22,4 +22,3 @@ COPY --from=ghcr.io/gmr/env-aws-params:latest /usr/local/bin/env-aws-params /usr
 COPY --from=builder /workspace/build/libs/*.jar app.jar
 
 ENTRYPOINT ["env-aws-params"]
-CMD ["java","-jar","/app.jar"]
