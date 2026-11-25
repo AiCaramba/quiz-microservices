@@ -47,6 +47,10 @@ jobs:
       - name: Fetch Parameters from AWS SSM
         id: ssm
         run: |
+          aws sts get-caller-identity
+          echo "Region: $AWS_REGION | Prefix: $PARAMS_PREFIX"
+          echo "Looking for: $PARAMS_PREFIX/COLLECTIONS_DATASOURCE_PASSWORD"
+          
           URL=$(aws ssm get-parameter \
             --region "$AWS_REGION" \
             --name "$PARAMS_PREFIX/COLLECTIONS_DATASOURCE_URL" \
