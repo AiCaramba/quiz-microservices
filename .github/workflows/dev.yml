@@ -108,6 +108,11 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             set -e
+            export IMAGE_URI="${{ env.IMAGE_URI }}"
+            export COLLECTIONS_DATASOURCE_URL="${{ env.COLLECTIONS_DATASOURCE_URL }}"
+            export COLLECTIONS_DATASOURCE_USERNAME="${{ env.COLLECTIONS_DATASOURCE_USERNAME }}"
+            export COLLECTIONS_DATASOURCE_PASSWORD="${{ env.COLLECTIONS_DATASOURCE_PASSWORD }}"
+            echo "Resolved IMAGE_URI: $IMAGE_URI"
             cd "/home/${{ secrets.EC2_USER }}/"
             aws ecr get-login-password --region "${{ env.AWS_REGION }}" | docker login --username AWS --password-stdin "${{ steps.login-ecr.outputs.registry }}"
             docker compose config
