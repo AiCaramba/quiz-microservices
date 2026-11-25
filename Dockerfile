@@ -3,6 +3,16 @@ WORKDIR workspace
 COPY . .
 RUN ./gradlew bootJar
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+ARG VERSION=v2.0.0
+RUN curl -fl "https://github.com/gmr/env-aws-params/releases/download/${VERSION}/env-aws-params_linux-amd64" \
+    -o /usr/local/bin/env-aws-params \
+    && chmod +x /usr/local/bin/env-aws-params
+
 FROM eclipse-temurin:21-jre-alpine
 RUN apk add --no-cache curl ca-certificates openssl \
     && mkdir -p /app/certs /tmp/rds-certs \
@@ -18,4 +28,6 @@ RUN apk add --no-cache curl ca-certificates openssl \
     && rm -rf /tmp/rds-certs /app/certs/global-bundle.pem
 RUN keytool -list -keystore /app/certs/rds-truststore.jks -storepass changeit | head -n 15
 COPY --from=builder /workspace/build/libs/*.jar app.jar
-ENTRYPOINT ["java","-jar","/app.jar"]
+
+ENTRYPOINT ["env-aws-params"]
+CMD ["java","-jar","/app.jar"]
