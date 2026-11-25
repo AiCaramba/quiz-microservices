@@ -8,6 +8,7 @@ env:
   AWS_REGION: eu-north-1
   AWS_REPOSITORY: development
   CONTAINER_NAME: collections-service
+  PARAMS_PREFIX: "/collections-service/dev"
 
 permissions:
   contents: read
