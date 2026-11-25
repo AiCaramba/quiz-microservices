@@ -73,6 +73,9 @@ jobs:
             --query "Parameter.Value" \
             --output text)
 
+          echo "DEBUG URL: $URL"
+          echo "DEBUG USER: $USER"
+
           echo "::add-mask::$URL"
           echo "::add-mask::$USER"
           echo "::add-mask::$PASS"
