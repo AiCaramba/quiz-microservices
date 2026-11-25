@@ -7,7 +7,7 @@ services:
     entrypoint: [ "env-aws-params" ]
     command:
       - "-p"
-      - "/collections-service/prod"
+      - "/collections-service/dev"
       - "--aws-region"
       - "eu-north-1"
       - "--"
