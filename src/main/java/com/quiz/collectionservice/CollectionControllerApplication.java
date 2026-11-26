@@ -1,13 +1,13 @@
-package com.quiz.collectionservice.controller;
+package com.quiz.collectionservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class CollectionServiceApplication {
+public class CollectionControllerApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(CollectionServiceApplication.class, args);
+        SpringApplication.run(CollectionControllerApplication.class, args);
     }
 
 }
