@@ -1,0 +1,20 @@
+services:
+  collections-service:
+    image: ${IMAGE_URI}
+    container_name: collections-service
+    ports:
+      - "80:8080"
+    entrypoint: [ "env-aws-params" ]
+    command:
+      - "-p"
+      - "/collections-service/dev"
+      - "--aws-region"
+      - "eu-north-1"
+      - "--"
+      - "java"
+      - "-jar"
+      - "/app.jar"
+    environment:
+      COLLECTIONS_DATASOURCE_URL: ${COLLECTIONS_DATASOURCE_URL}
+      COLLECTIONS_DATASOURCE_USERNAME: ${COLLECTIONS_DATASOURCE_USERNAME}
+      COLLECTIONS_DATASOURCE_PASSWORD: ${COLLECTIONS_DATASOURCE_PASSWORD}

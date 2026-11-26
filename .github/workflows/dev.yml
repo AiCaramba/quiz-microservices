@@ -8,7 +8,7 @@ env:
   AWS_REGION: eu-north-1
   AWS_REPOSITORY: development
   CONTAINER_NAME: collections-service
-  APP_DIR: /opt/collections-service
+  PARAMS_PREFIX: "/collections-service/dev"
 
 permissions:
   contents: read
@@ -45,17 +45,77 @@ jobs:
           docker push "$IMAGE_URI"
           echo "image=$IMAGE_URI" >> $GITHUB_OUTPUT
 
+      - name: Fetch Parameters from AWS SSM
+        id: ssm
+        run: |
+          aws sts get-caller-identity
+          echo "Region: $AWS_REGION | Prefix: $PARAMS_PREFIX"
+          echo "Looking for: $PARAMS_PREFIX/COLLECTIONS_DATASOURCE_PASSWORD"
+          
+          URL=$(aws ssm get-parameter \
+            --region "$AWS_REGION" \
+            --name "$PARAMS_PREFIX/COLLECTIONS_DATASOURCE_URL" \
+            --with-decryption \
+            --query "Parameter.Value" \
+            --output text)
+
+          USER=$(aws ssm get-parameter \
+            --region "$AWS_REGION" \
+            --name "$PARAMS_PREFIX/COLLECTIONS_DATASOURCE_USERNAME" \
+            --with-decryption \
+            --query "Parameter.Value" \
+            --output text)
+
+          PASS=$(aws ssm get-parameter \
+            --region "$AWS_REGION" \
+            --name "$PARAMS_PREFIX/COLLECTIONS_DATASOURCE_PASSWORD" \
+            --with-decryption \
+            --query "Parameter.Value" \
+            --output text)
+
+          echo "DEBUG URL: $URL"
+          echo "DEBUG USER: $USER"
+
+          echo "::add-mask::$URL"
+          echo "::add-mask::$USER"
+          echo "::add-mask::$PASS"
+
+          echo "url=$URL" >> $GITHUB_OUTPUT
+          echo "username=$USER" >> $GITHUB_OUTPUT
+          echo "password=$PASS" >> $GITHUB_OUTPUT
+      
+      - name: Copy docker-compose.yaml to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "docker-compose.yaml"
+          target: "/home/${{ secrets.EC2_USER }}/"
+          strip_components: 0
+
       - name: Deploy with Docker Compose on EC2
         uses: appleboy/ssh-action@v1.2.0
+        env:
+            IMAGE_URI: ${{ steps.build-image.outputs.image }}
+            COLLECTIONS_DATASOURCE_URL: ${{ steps.ssm.outputs.url }}
+            COLLECTIONS_DATASOURCE_USERNAME: ${{ steps.ssm.outputs.username }}
+            COLLECTIONS_DATASOURCE_PASSWORD: ${{ steps.ssm.outputs.password }}
         with:
+          envs: IMAGE_URI,COLLECTIONS_DATASOURCE_URL,COLLECTIONS_DATASOURCE_USERNAME,COLLECTIONS_DATASOURCE_PASSWORD
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             set -e
-            cd "${{ env.APP_DIR }}"
+            export IMAGE_URI="${{ env.IMAGE_URI }}"
+            export COLLECTIONS_DATASOURCE_URL="${{ env.COLLECTIONS_DATASOURCE_URL }}"
+            export COLLECTIONS_DATASOURCE_USERNAME="${{ env.COLLECTIONS_DATASOURCE_USERNAME }}"
+            export COLLECTIONS_DATASOURCE_PASSWORD="${{ env.COLLECTIONS_DATASOURCE_PASSWORD }}"
+            echo "Resolved IMAGE_URI: $IMAGE_URI"
+            cd "/home/${{ secrets.EC2_USER }}/"
             aws ecr get-login-password --region "${{ env.AWS_REGION }}" | docker login --username AWS --password-stdin "${{ steps.login-ecr.outputs.registry }}"
-            export IMAGE_TAG="${{ github.sha }}"
+            docker compose config
             docker compose pull
-            docker compose up -d --remove-orphans
+            docker compose up -d --force-recreate --remove-orphans
             docker image prune -f

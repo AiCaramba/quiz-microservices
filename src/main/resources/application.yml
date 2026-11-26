@@ -1,0 +1,18 @@
+spring:
+  datasource:
+    url: ${COLLECTIONS_DATASOURCE_URL}
+    username: ${COLLECTIONS_DATASOURCE_USERNAME}
+    password: ${COLLECTIONS_DATASOURCE_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      pool-name: MainPool
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1740000  # 29 minutes — safe if DB times out at 30 min
+      leak-detection-threshold: 2000  # warn if connection held > 2 seconds
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
